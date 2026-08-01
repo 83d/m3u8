@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 播放器 - DPlayer</title>
+    <link rel="icon" type="image/png" href="https://i0.hdslb.com/bfs/new_dyn/cc0ea469edc619092c87354826610f2052848930.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: #fff;
+        }
+        .input-area {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a2a;
+        }
+        .input-area label {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-row input:focus {
+            border-color: #0099ff;
+        }
+        .input-row input::placeholder {
+            color: #555;
+        }
+        .input-row button {
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: none;
+            background: #0099ff;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover {
+            background: #007acc;
+        }
+        .input-row button:active {
+            transform: scale(0.98);
+        }
+        .hint {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .player-wrapper {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        #dplayer {
+            width: 100%;
+            height: 100%;
+        }
+        .empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+        .info-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a2a;
+        }
+        .info-card h3 {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .info-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .info-card li {
+            font-size: 13px;
+            color: #888;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .info-card li::before {
+            content: "•";
+            position: absolute;
+            left: 6px;
+            color: #0099ff;
+        }
+        .error-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            color: #ff6b6b;
+            font-size: 14px;
+            background: #000;
+        }
+        .error-state .sub {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* DPlayer 缓冲进度条 - 默认太淡，这里加深 */
+        .dplayer-loaded {
+            background: rgba(0, 153, 255, 0.4) !important;
+        }
+        /* 已播放进度保持主题色 */
+        .dplayer-played {
+            background: #0099ff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 M3U8 播放器</h1>
+
+        <div class="input-area">
+            <label>M3U8 视频地址</label>
+            <div class="input-row">
+                <input type="text" id="urlInput" placeholder="https://example.com/video.m3u8" 
+                    value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">
+                <button id="playBtn">▶ 播放</button>
+            </div>
+            <p class="hint">💡 输入 m3u8 地址后点击播放，上方已预填测试地址。按 Enter 也可触发播放。</p>
+        </div>
+
+        <div class="player-wrapper" id="playerWrapper">
+            <div class="empty-state" id="emptyState">
+                <div class="icon">📺</div>
+                <div>点击上方「播放」按钮开始加载视频</div>
+            </div>
+            <div id="dplayer" style="display:none;"></div>
+        </div>
+
+        <div class="info-card">
+            <h3>使用说明</h3>
+            <ul>
+                <li>在上方输入框粘贴你的 m3u8 视频地址</li>
+                <li>点击「播放」按钮即可加载视频</li>
+                <li>支持直播流（Live）和点播流（VOD）</li>
+                <li>如果视频无法播放，请检查地址是否支持跨域 (CORS)</li>
+                <li>播放器基于 DPlayer + hls.js 构建，纯前端实现</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/hls.js/1.5.0/hls.min.js"></script>
+    <script src="https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/dplayer/1.27.0/DPlayer.min.js"></script>
+    <script>
+        (function() {
+            let dp = null;
+            let currentHls = null;
+            let currentUrl = '';
+            let playerGeneration = 0;
+            let progressTimer = null;
+            const urlInput = document.getElementById('urlInput');
+            const playBtn = document.getElementById('playBtn');
+            const emptyState = document.getElementById('emptyState');
+            let dplayerEl = document.getElementById('dplayer');
+
+            // ========== localStorage 键名 ==========
+            const KEY_URL      = 'm3u8-player-url';
+            const KEY_PROGRESS = 'm3u8-player-progress';
+            const KEY_VOLUME   = 'm3u8-player-volume';
+
+            // ========== 1. 页面加载时恢复上次输入的 URL ==========
+            (function restoreUrl() {
+                var saved = localStorage.getItem(KEY_URL);
+                if (saved) {
+                    urlInput.value = saved;
+                }
+            })();
+
+            // ========== 2. 输入框内容一变化就自动保存 ==========
+            urlInput.addEventListener('input', function() {
+                localStorage.setItem(KEY_URL, urlInput.value);
+            });
+
+            // ========== 3. 播放进度持久化工具函数 ==========
+            function getProgressMap() {
+                try {
+                    return JSON.parse(localStorage.getItem(KEY_PROGRESS)) || {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveProgress(url, time) {
+                if (!url || time <= 0) return;
+                var map = getProgressMap();
+                map[url] = Math.floor(time);
+                localStorage.setItem(KEY_PROGRESS, JSON.stringify(map));
+            }
+
+            function getProgress(url) {
+                var map = getProgressMap();
+                return map[url] || 0;
+            }
+
+            function clearProgress(url) {
+                var map = getProgressMap();
+                delete map[url];
+                localStorage.setItem(KEY_PROGRESS, JSON.stringify(map));
+            }
+
+            // ========== 3.5 音量持久化 ==========
+            function getSavedVolume() {
+                var v = localStorage.getItem(KEY_VOLUME);
+                if (v === null) return 0.7;  // 默认音量
+                return parseFloat(v);
+            }
+
+            function saveVolume(vol) {
+                if (vol >= 0 && vol <= 1) {
+                    localStorage.setItem(KEY_VOLUME, vol);
+                }
+            }
+
+            // ========== 4. 启动进度定时保存 ==========
+            function startProgressSaver(url, player, generation) {
+                stopProgressSaver();
+                progressTimer = setInterval(function() {
+                    if (generation === playerGeneration && dp === player
+                        && player.video && player.video.currentTime) {
+                        saveProgress(url, player.video.currentTime);
+                    }
+                }, 5000);
+            }
+
+            function stopProgressSaver() {
+                if (progressTimer) {
+                    clearInterval(progressTimer);
+                    progressTimer = null;
+                }
+            }
+
+            // ========== 5. 错误展示 ==========
+            function showError(msg, sub) {
+                var wrapper = document.getElementById('playerWrapper');
+                stopProgressSaver();
+                wrapper.innerHTML = ''
+                    + '<div class="error-state">'
+                    + '  <div>❌ ' + msg + '</div>'
+                    + '  <div class="sub">' + (sub || '') + '</div>'
+                    + '</div>'
+                    + '<div id="dplayer" style="display:none;"></div>';
+                // 重新获取 dplayerEl 引用，因为 innerHTML 重建了 DOM
+                dplayerEl = document.getElementById('dplayer');
+            }
+
+            // 先让旧播放器失效，再销毁 Hls 和 DPlayer。
+            // 这样销毁 video.src 时产生的延迟 error 不会影响下一次播放。
+            function destroyCurrentPlayer() {
+                playerGeneration += 1;
+                stopProgressSaver();
+
+                var oldPlayer = dp;
+                var oldHls = currentHls;
+                var oldUrl = currentUrl;
+
+                dp = null;
+                currentHls = null;
+                currentUrl = '';
+
+                if (oldPlayer && oldPlayer.video && oldPlayer.video.currentTime) {
+                    saveProgress(oldUrl, oldPlayer.video.currentTime);
+                }
+
+                // Hls 必须先于 DPlayer 销毁，否则它会继续请求并监听已移除的 video。
+                if (oldHls) {
+                    try {
+                        oldHls.destroy();
+                    } catch (e) {
+                        console.warn('销毁 Hls 失败', e);
+                    }
+                }
+
+                if (oldPlayer) {
+                    try {
+                        oldPlayer.destroy();
+                    } catch (e) {
+                        console.warn('销毁 DPlayer 失败', e);
+                    }
+                }
+            }
+
+            // ========== 6. 初始化播放器 ==========
+            function initPlayer(url) {
+                destroyCurrentPlayer();
+                var generation = playerGeneration;
+                currentUrl = url;
+
+                // 确保引用是最新的（showError 会重建 DOM）
+                var empty = document.getElementById('emptyState');
+                var dEl   = document.getElementById('dplayer');
+                if (empty) empty.style.display = 'none';
+                if (dEl)   dEl.style.display   = 'block';
+                dplayerEl = dEl || dplayerEl;
+
+                try {
+                    var player = new DPlayer({
+                        container: dplayerEl,
+                        video: {
+                            url: url,
+                            type: 'customHls',
+                            customType: {
+                                customHls: function(video, player) {
+                                    if (generation !== playerGeneration) return;
+
+                                    currentHls = new Hls({
+                                        maxBufferLength: 1e9,           // 提前缓冲时长：10亿秒 ≈ 无限制
+                                        maxMaxBufferLength: 1e9,        // 绝对时长上限：无限制
+                                        maxBufferSize: 1e12             // 内存上限 1TB（等同于无限制）
+                                    });
+                                    currentHls.loadSource(video.src);
+                                    currentHls.attachMedia(video);
+                                }
+                            }
+                        },
+                        autoplay: true,
+                        theme: '#0099ff',
+                        lang: 'zh-cn',
+                        screenshot: true,
+                        hotkey: true,
+                        preload: 'auto',
+                        volume: getSavedVolume(),
+                        contextmenu: [
+                            { text: 'DPlayer M3U8 播放器', link: 'https://github.com/DIYgod/DPlayer' }
+                        ]
+                    });
+                    dp = player;
+
+                    function isCurrentPlayer() {
+                        return generation === playerGeneration && dp === player;
+                    }
+
+                    // 恢复上次的播放进度
+                    var savedTime = getProgress(url);
+                    if (savedTime > 0) {
+                        player.seek(savedTime);
+                    }
+
+                    // 音量变化时保存
+                    player.on('volumechange', function() {
+                        if (isCurrentPlayer() && player.video) {
+                            saveVolume(player.video.volume);
+                        }
+                    });
+
+                    // 播放时启动定时保存
+                    player.on('play', function() {
+                        if (!isCurrentPlayer()) return;
+                        startProgressSaver(url, player, generation);
+                    });
+
+                    // 暂停时保存一次并停止定时器
+                    player.on('pause', function() {
+                        if (!isCurrentPlayer()) return;
+                        stopProgressSaver();
+                        if (player.video && player.video.currentTime) {
+                            saveProgress(url, player.video.currentTime);
+                        }
+                    });
+
+                    // 播放结束时清除该视频的进度记录
+                    player.on('ended', function() {
+                        if (!isCurrentPlayer()) return;
+                        stopProgressSaver();
+                        clearProgress(url);
+                    });
+
+                    // 出错时停止保存
+                    player.on('error', function() {
+                        if (!isCurrentPlayer()) return;
+                        destroyCurrentPlayer();
+                        showError('视频加载失败', '请检查 m3u8 地址是否有效或支持 CORS 跨域');
+                    });
+
+                    player.on('destroy', function() {
+                        if (!isCurrentPlayer()) return;
+                        stopProgressSaver();
+                    });
+
+                } catch (e) {
+                    if (generation !== playerGeneration) return;
+                    destroyCurrentPlayer();
+                    showError('初始化失败', e.message);
+                }
+            }
+
+            // 从任意混杂文本中提取第一个 m3u8 地址。
+            // 排除 $ 和 #，以兼容“正片$URL#下一集$URL”一类采集源格式。
+            function extractM3u8Url(value) {
+                var text = String(value || '').trim().replace(/\\\//g, '/');
+                var match = text.match(/https?:\/\/[^\s"'<>$#]*?\.m3u8(?:\?[^\s"'<>$#]*)?/i);
+                return match ? match[0].replace(/[，。；！？、,;!?)\]}]+$/g, '') : '';
+            }
+
+            // ========== 7. 按钮事件 ==========
+            playBtn.addEventListener('click', function() {
+                var input = urlInput.value.trim();
+                if (!input) {
+                    alert('请输入 m3u8 地址');
+                    urlInput.focus();
+                    return;
+                }
+
+                var url = extractM3u8Url(input);
+                if (!url) {
+                    alert('没有从输入内容中找到有效的 m3u8 地址');
+                    urlInput.focus();
+                    return;
+                }
+
+                // 将输入框同步为提取后的纯 URL，便于确认实际播放地址。
+                urlInput.value = url;
+                // 点击播放时也保存 URL
+                localStorage.setItem(KEY_URL, url);
+                initPlayer(url);
+            });
+
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') playBtn.click();
+            });
+        })();
+    </script>
+</body>
+</html>
