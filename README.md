@@ -1,0 +1,119 @@
+# M3U8 播放器
+
+一个基于 [DPlayer](https://github.com/DIYgod/DPlayer) 和 [hls.js](https://github.com/video-dev/hls.js) 的纯前端 M3U8 播放器。无需后端和构建工具，启动本地静态服务器后即可使用。
+
+## 功能
+
+- 支持 HLS 点播（VOD）和直播（Live）。
+- 支持从混杂文本中自动提取第一个 M3U8 地址。
+- 自动清除输入首尾的空格、换行符等空白字符。
+- 兼容 `高清版$URL`、`正片$URL#下一集$URL` 和 JSON 转义 URL 等常见采集源格式。
+- 切换视频时完整销毁旧 Hls 和 DPlayer 实例，避免旧播放器的延迟错误影响新播放器。
+- 按 M3U8 URL 保存和恢复播放进度；播放结束后自动清除该进度。
+- 自动记忆输入地址和音量。
+- 保留 DPlayer 自带的截图、快捷键、页面全屏和浏览器全屏功能。
+- 纯 HTML、CSS、JavaScript 实现，没有服务端依赖。
+
+## 快速开始
+
+克隆仓库：
+
+```bash
+git clone https://github.com/83d/m3u8.git
+cd m3u8
+```
+
+建议通过本地 HTTP 服务打开页面。例如已经安装 Python 时：
+
+```bash
+python -m http.server 8000
+```
+
+然后访问：
+
+```text
+http://127.0.0.1:8000/m3u8-player.html
+```
+
+项目通过 CDN 加载 DPlayer 和 hls.js，因此首次使用需要能够访问对应 CDN。
+
+## 输入格式
+
+可以直接输入纯 URL：
+
+```text
+https://example.com/video/index.m3u8
+```
+
+也可以直接粘贴带名称、空格和换行的采集源文本：
+
+```text
+                    高清版$https://example.com/video/index.m3u8
+```
+
+多条线路文本也可以识别，但播放器只提取并播放第一个 M3U8 地址：
+
+```text
+正片$https://example.com/main/index.m3u8#备用$https://example.com/backup/index.m3u8
+```
+
+点击“播放”后，输入框会自动替换为实际提取出的纯 URL，方便确认真正交给播放器的地址。
+
+## 播放器操作
+
+- 点击播放按钮或在输入框中按 Enter 开始播放。
+- DPlayer 全屏区域同时提供“页面全屏”和“浏览器全屏”。“页面全屏”按钮会在鼠标悬停到全屏区域时显示。
+- 截图按钮由 DPlayer 提供；视频源的 CORS 设置不兼容时，截图可能受到浏览器限制。
+- 空格、方向键等快捷键由 DPlayer 处理。
+
+## 使用限制
+
+播放器在浏览器中直接请求 M3U8 清单和媒体分片，因此视频服务器必须允许相应的跨域访问（CORS）。如果地址可以在其他播放器中播放，但本页面提示加载失败，应优先检查：
+
+- M3U8 清单和分片地址是否仍然有效。
+- 视频服务器是否允许当前页面来源跨域访问。
+- HTTPS 页面是否正在请求 HTTP 视频资源；浏览器通常会拦截这种混合内容。
+- 地址是否依赖 Referer、Cookie、临时签名或其他鉴权信息。
+
+本项目不会代理、转存或破解受限制的视频资源。
+
+## 维护说明
+
+### 为什么使用 `customType`
+
+项目有意通过 DPlayer 的 `customType` 扩展点自行创建 hls.js 实例，不要直接改成 `type: 'hls'`。
+
+当前使用的 DPlayer 1.27.0 会在浏览器声明支持原生 HLS 时绕过 hls.js，导致项目设置的 hls.js 缓冲参数不生效。使用 `customType` 可以确保支持 MSE 的浏览器继续使用 hls.js；当 hls.js 无法运行而浏览器具备原生 HLS 能力时，再回退到原生播放。
+
+### 为什么必须按顺序销毁
+
+每次点击播放都会创建全新的播放器生命周期。切源时必须：
+
+1. 递增 `playerGeneration`，让旧播放器的异步回调立即失效。
+2. 保存旧播放器的有效播放进度。
+3. 先调用 `Hls.destroy()`，停止网络请求并解除媒体监听。
+4. 再调用 `DPlayer.destroy()`，销毁播放器和旧 `<video>`。
+
+浏览器在清空旧 `video.src` 后仍可能异步触发 `MEDIA_ELEMENT_ERROR: Empty src attribute`。事件中的 generation 校验用于忽略这类过期错误，不能省略。
+
+### 缓冲参数
+
+`HLS_OPTIONS` 中的极大值用于保留原项目“尽可能完整地提前缓冲”的需求，不是笔误。修改这些值会改变内存占用和提前加载行为，调整前应先确认新的产品需求并进行长视频测试。
+
+## 主要依赖
+
+| 依赖 | 版本 | 用途 |
+| --- | --- | --- |
+| DPlayer | 1.27.0 | 播放器界面、控制栏、截图和全屏 |
+| hls.js | 1.5.0 | 在支持 MSE 的浏览器中解析和播放 HLS |
+
+依赖版本和 CDN 地址定义在 `m3u8-player.html` 中。
+
+## 项目结构
+
+```text
+.
+├── m3u8-player.html   # 页面、样式和播放器逻辑
+├── m3u8-player.ico    # 项目图标资源
+└── README.md          # 使用与维护说明
+```
