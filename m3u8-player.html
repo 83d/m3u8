@@ -152,11 +152,14 @@
             font-size: 12px;
         }
 
-        /* DPlayer 缓冲进度条 - 默认太淡，这里加深 */
+        /*
+         * 【项目定制：播放器主题】DPlayer 默认的缓冲进度颜色在深色背景下太淡，
+         * 这里只增强进度条对比度，不接管控制栏或全屏按钮，以免影响官方“页面全屏”。
+         */
         .dplayer-loaded {
             background: rgba(0, 153, 255, 0.4) !important;
         }
-        /* 已播放进度保持主题色 */
+        /* 已播放进度保持与页面按钮一致的主题色。 */
         .dplayer-played {
             background: #0099ff !important;
         }
@@ -200,9 +203,21 @@
     <script src="https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/dplayer/1.27.0/DPlayer.min.js"></script>
     <script>
         (function() {
+            /*
+             * ========== 项目定制约束（修改播放器前请先阅读） ==========
+             * 1. 输入框支持直接粘贴采集源文本：会 trim，并从“名称$URL”等混杂内容中提取 m3u8。
+             * 2. 必须通过 customType 主动创建 hls.js，才能在当前 DPlayer 版本中保留大缓冲参数；
+             *    仅在 hls.js 无法运行、但浏览器具备原生 HLS 能力时才回退到原生播放。
+             * 3. 每次点击播放都视为新一代播放器：旧 Hls 要先于旧 DPlayer 销毁，所有异步事件
+             *    必须校验 generation，防止旧 video 的延迟 error 破坏新播放器。
+             * 4. URL、分 URL 的播放进度和音量会存入 localStorage，这是有意保留的使用体验。
+             * 5. “页面全屏”和“浏览器全屏”沿用 DPlayer 自带控制栏；不要另外实现或删除其控件。
+             */
             let dp = null;
+            // customType 创建的 Hls 不归 DPlayer 管理，本页面必须保存引用并主动销毁。
             let currentHls = null;
             let currentUrl = '';
+            // 单调递增的生命周期令牌，用于识别已经被切源淘汰的播放器及其延迟事件。
             let playerGeneration = 0;
             let progressTimer = null;
             const urlInput = document.getElementById('urlInput');
@@ -210,12 +225,21 @@
             const emptyState = document.getElementById('emptyState');
             let dplayerEl = document.getElementById('dplayer');
 
-            // ========== localStorage 键名 ==========
+            // 【项目定制：状态记忆】进度以 URL 为键保存，避免不同视频互相覆盖续播位置。
             const KEY_URL      = 'm3u8-player-url';
             const KEY_PROGRESS = 'm3u8-player-progress';
             const KEY_VOLUME   = 'm3u8-player-volume';
 
-            // ========== 1. 页面加载时恢复上次输入的 URL ==========
+            // 【项目定制：尽可能完整地提前缓冲】以下极大值是原项目的明确需求，不是笔误。
+            // 当前锁定的 DPlayer 1.27.0 使用 type: 'hls' 时，会在浏览器声明原生 HLS 支持后
+            // 绕过 hls.js，使 pluginOptions.hls 不生效；因此这里有意使用其 customType 扩展点。
+            const HLS_OPTIONS = {
+                maxBufferLength: 1e9,           // 提前缓冲时长：10亿秒 ≈ 无限制
+                maxMaxBufferLength: 1e9,        // 绝对时长上限：无限制
+                maxBufferSize: 1e12             // 内存上限 1TB（等同于无限制）
+            };
+
+            // 页面重开后恢复上次输入，避免刷新页面时重新粘贴地址。
             (function restoreUrl() {
                 var saved = localStorage.getItem(KEY_URL);
                 if (saved) {
@@ -223,12 +247,12 @@
                 }
             })();
 
-            // ========== 2. 输入框内容一变化就自动保存 ==========
+            // 先保存用户粘贴的原始文本；点击播放并成功提取后，再用纯 URL 覆盖它。
             urlInput.addEventListener('input', function() {
                 localStorage.setItem(KEY_URL, urlInput.value);
             });
 
-            // ========== 3. 播放进度持久化工具函数 ==========
+            // 【项目定制：断点续播】同一个 m3u8 URL 恢复上次播放位置。
             function getProgressMap() {
                 try {
                     return JSON.parse(localStorage.getItem(KEY_PROGRESS)) || {};
@@ -255,7 +279,7 @@
                 localStorage.setItem(KEY_PROGRESS, JSON.stringify(map));
             }
 
-            // ========== 3.5 音量持久化 ==========
+            // 【项目定制：音量记忆】新播放器沿用用户最后一次设置，而不是每次回到默认值。
             function getSavedVolume() {
                 var v = localStorage.getItem(KEY_VOLUME);
                 if (v === null) return 0.7;  // 默认音量
@@ -268,7 +292,8 @@
                 }
             }
 
-            // ========== 4. 启动进度定时保存 ==========
+            // 每 5 秒保存一次，在写入频率和意外关页时的进度损失之间取平衡。
+            // generation 和实例双重校验用于阻止旧播放器的定时器写入新会话。
             function startProgressSaver(url, player, generation) {
                 stopProgressSaver();
                 progressTimer = setInterval(function() {
@@ -286,7 +311,7 @@
                 }
             }
 
-            // ========== 5. 错误展示 ==========
+            // 错误面板会替换播放器子树，因此同时重建一个干净的 #dplayer 供下次播放使用。
             function showError(msg, sub) {
                 var wrapper = document.getElementById('playerWrapper');
                 stopProgressSaver();
@@ -300,8 +325,9 @@
                 dplayerEl = document.getElementById('dplayer');
             }
 
-            // 先让旧播放器失效，再销毁 Hls 和 DPlayer。
-            // 这样销毁 video.src 时产生的延迟 error 不会影响下一次播放。
+            // 【项目定制：安全切源】先递增 generation 让旧回调失效，再依次销毁 Hls 和 DPlayer。
+            // 销毁 video.src 会异步产生 MEDIA_ELEMENT_ERROR；顺序和令牌校验都不能省略，
+            // 否则旧播放器的 error 可能在新播放器创建后到达，并把新 DOM 替换成错误页面。
             function destroyCurrentPlayer() {
                 playerGeneration += 1;
                 stopProgressSaver();
@@ -318,7 +344,8 @@
                     saveProgress(oldUrl, oldPlayer.video.currentTime);
                 }
 
-                // Hls 必须先于 DPlayer 销毁，否则它会继续请求并监听已移除的 video。
+                // customType 中创建的 Hls 归本页面所有，必须在 DPlayer 前主动销毁，
+                // 否则它仍可能请求分片并监听即将被移除的 video。
                 if (oldHls) {
                     try {
                         oldHls.destroy();
@@ -336,9 +363,10 @@
                 }
             }
 
-            // ========== 6. 初始化播放器 ==========
+            // 每次播放均新建实例，确保不同视频不共享媒体状态、缓冲区和事件监听器。
             function initPlayer(url) {
                 destroyCurrentPlayer();
+                // 捕获本次生命周期；下面所有事件只允许操作同一 generation 的实例。
                 var generation = playerGeneration;
                 currentUrl = url;
 
@@ -350,38 +378,51 @@
                 dplayerEl = dEl || dplayerEl;
 
                 try {
+                    // DPlayer 自带“页面全屏”（.dplayer-full-in-icon，悬停全屏区域时显示）
+                    // 和浏览器全屏。本项目只使用这套官方控件，不另外维护全屏状态。
                     var player = new DPlayer({
                         container: dplayerEl,
                         video: {
                             url: url,
+                            // 不要直接改成 type: 'hls'：那会在部分 Chromium 中绕过下方 HLS_OPTIONS。
                             type: 'customHls',
                             customType: {
-                                customHls: function(video, player) {
+                                customHls: function(video) {
                                     if (generation !== playerGeneration) return;
 
-                                    currentHls = new Hls({
-                                        maxBufferLength: 1e9,           // 提前缓冲时长：10亿秒 ≈ 无限制
-                                        maxMaxBufferLength: 1e9,        // 绝对时长上限：无限制
-                                        maxBufferSize: 1e12             // 内存上限 1TB（等同于无限制）
-                                    });
-                                    currentHls.loadSource(video.src);
-                                    currentHls.attachMedia(video);
+                                    if (window.Hls && Hls.isSupported()) {
+                                        currentHls = new Hls(HLS_OPTIONS);
+                                        currentHls.loadSource(video.src);
+                                        currentHls.attachMedia(video);
+                                        return;
+                                    }
+
+                                    // Safari 等浏览器不支持 MSE 时，DPlayer 已把 URL 写入 video.src；
+                                    // 此处什么都不做即可保留浏览器的原生 HLS 播放能力。
+                                    if (video.canPlayType('application/vnd.apple.mpegURL')
+                                        || video.canPlayType('application/x-mpegURL')) {
+                                        return;
+                                    }
+
+                                    throw new Error('当前浏览器不支持 HLS 播放');
                                 }
                             }
                         },
-                        autoplay: true,
-                        theme: '#0099ff',
-                        lang: 'zh-cn',
-                        screenshot: true,
-                        hotkey: true,
-                        preload: 'auto',
-                        volume: getSavedVolume(),
+                        autoplay: true,                 // 用户已主动点击“播放”，创建后立即开始。
+                        theme: '#0099ff',               // 与页面按钮和进度条保持一致。
+                        lang: 'zh-cn',                  // 使用 DPlayer 内置中文提示。
+                        screenshot: true,               // 保留控制栏截图按钮，这是项目既有功能。
+                        hotkey: true,                   // 保留空格、方向键等 DPlayer 快捷键。
+                        preload: 'auto',                // 点播内容允许浏览器尽早准备媒体数据。
+                        volume: getSavedVolume(),       // 跨播放器实例延续用户音量。
+                        // 保留项目入口，同时不修改 DPlayer 自带的右键菜单实现。
                         contextmenu: [
                             { text: 'DPlayer M3U8 播放器', link: 'https://github.com/DIYgod/DPlayer' }
                         ]
                     });
                     dp = player;
 
+                    // DPlayer 销毁后仍可能收到原 video 的异步事件，所有监听器统一走此判断。
                     function isCurrentPlayer() {
                         return generation === playerGeneration && dp === player;
                     }
@@ -440,15 +481,15 @@
                 }
             }
 
-            // 从任意混杂文本中提取第一个 m3u8 地址。
-            // 排除 $ 和 #，以兼容“正片$URL#下一集$URL”一类采集源格式。
+            // 【项目定制：宽松粘贴】从任意混杂文本中提取第一个 m3u8 地址：
+            // trim 清除首尾空格/换行，replace 兼容 JSON 中的 https:\/\/ 转义形式；
+            // 正则排除 $ 和 #，避免“正片$URL#下一集$URL”一类采集源文本串到下一条。
             function extractM3u8Url(value) {
                 var text = String(value || '').trim().replace(/\\\//g, '/');
                 var match = text.match(/https?:\/\/[^\s"'<>$#]*?\.m3u8(?:\?[^\s"'<>$#]*)?/i);
                 return match ? match[0].replace(/[，。；！？、,;!?)\]}]+$/g, '') : '';
             }
 
-            // ========== 7. 按钮事件 ==========
             playBtn.addEventListener('click', function() {
                 var input = urlInput.value.trim();
                 if (!input) {
@@ -464,9 +505,8 @@
                     return;
                 }
 
-                // 将输入框同步为提取后的纯 URL，便于确认实际播放地址。
+                // 将输入框和存储值同步为提取后的纯 URL，便于确认真正交给播放器的地址。
                 urlInput.value = url;
-                // 点击播放时也保存 URL
                 localStorage.setItem(KEY_URL, url);
                 initPlayer(url);
             });
