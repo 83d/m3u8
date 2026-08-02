@@ -1,6 +1,6 @@
 # M3U8 播放器
 
-一个基于 [DPlayer](https://github.com/DIYgod/DPlayer) 和 [hls.js](https://github.com/video-dev/hls.js) 的纯前端 M3U8 播放器。无需后端和构建工具，启动本地静态服务器后即可使用。
+一个基于 [DPlayer](https://github.com/DIYgod/DPlayer) 和 [hls.js](https://github.com/video-dev/hls.js) 的纯前端 M3U8 播放器。无需后端和构建工具，启动本地静态服务器后即可使用。运行所需的播放器脚本已经固定版本并存放在项目 `lib` 目录中，不依赖外部 CDN。
 
 ## 功能
 
@@ -35,7 +35,7 @@ python -m http.server 8000
 http://127.0.0.1:8000/m3u8-player.html
 ```
 
-项目通过 CDN 加载 DPlayer 和 hls.js，因此首次使用需要能够访问对应 CDN。
+页面、播放器脚本和图标均由当前项目提供，打开页面时不需要访问外部 CDN。实际播放时仍需访问输入的 M3U8 清单及其媒体分片。
 
 ## 输入格式
 
@@ -102,18 +102,22 @@ https://example.com/video/index.m3u8
 
 ## 主要依赖
 
-| 依赖 | 版本 | 用途 |
-| --- | --- | --- |
-| DPlayer | 1.27.0 | 播放器界面、控制栏、截图和全屏 |
-| hls.js | 1.5.0 | 在支持 MSE 的浏览器中解析和播放 HLS |
+| 依赖 | 版本 | 本地文件 | 用途 |
+| --- | --- | --- | --- |
+| DPlayer | 1.27.0 | `lib/DPlayer.min.js` | 播放器界面、控制栏、截图和全屏 |
+| hls.js | 1.5.0 | `lib/hls.min.js` | 在支持 MSE 的浏览器中解析和播放 HLS |
 
-依赖版本和 CDN 地址定义在 `m3u8-player.html` 中。
+依赖版本固定在仓库中，第三方许可证和版权声明集中保存在 `lib/THIRD_PARTY_LICENSES.txt`。升级依赖时应同时更新本表、许可证文件，并重新进行播放和切源测试。
 
 ## 项目结构
 
 ```text
 .
 ├── m3u8-player.html   # 页面、样式和播放器逻辑
-├── m3u8-player.ico    # 项目图标资源
+├── lib/
+│   ├── DPlayer.min.js       # DPlayer 1.27.0
+│   ├── hls.min.js           # hls.js 1.5.0
+│   ├── m3u8-player.ico      # 项目图标资源
+│   └── THIRD_PARTY_LICENSES.txt # 第三方许可证和版权声明
 └── README.md          # 使用与维护说明
 ```

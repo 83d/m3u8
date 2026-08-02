@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M3U8 播放器 - DPlayer</title>
-    <link rel="icon" type="image/x-icon" href="./m3u8-player.ico">
+    <link rel="icon" type="image/x-icon" href="./lib/m3u8-player.ico">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -199,8 +199,8 @@
         </div>
     </div>
 
-    <script src="https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/hls.js/1.5.0/hls.min.js"></script>
-    <script src="https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/dplayer/1.27.0/DPlayer.min.js"></script>
+    <script src="./lib/hls.min.js"></script>
+    <script src="./lib/DPlayer.min.js"></script>
     <script>
         (function() {
             /*
@@ -325,6 +325,30 @@
                 dplayerEl = document.getElementById('dplayer');
             }
 
+            // 每次开始新的播放生命周期都先恢复为唯一的播放器视图。
+            // showError 会保留一个覆盖整个区域的错误层；如果不在这里主动移除，
+            // 后续播放器即使已经成功创建，也仍会被上一次的错误信息遮住。
+            function preparePlayerView() {
+                var wrapper = document.getElementById('playerWrapper');
+                var errorState = wrapper.querySelector('.error-state');
+                var empty = wrapper.querySelector('#emptyState');
+                var dEl = wrapper.querySelector('#dplayer');
+
+                if (errorState) errorState.remove();
+                if (empty) empty.style.display = 'none';
+
+                // 正常情况下 showError 已经重建了容器；这里兜底保证初始化入口始终可用。
+                if (!dEl) {
+                    dEl = document.createElement('div');
+                    dEl.id = 'dplayer';
+                    wrapper.appendChild(dEl);
+                }
+
+                dEl.style.display = 'block';
+                dplayerEl = dEl;
+                return dEl;
+            }
+
             // 【项目定制：安全切源】先递增 generation 让旧回调失效，再依次销毁 Hls 和 DPlayer。
             // 销毁 video.src 会异步产生 MEDIA_ELEMENT_ERROR；顺序和令牌校验都不能省略，
             // 否则旧播放器的 error 可能在新播放器创建后到达，并把新 DOM 替换成错误页面。
@@ -370,12 +394,8 @@
                 var generation = playerGeneration;
                 currentUrl = url;
 
-                // 确保引用是最新的（showError 会重建 DOM）
-                var empty = document.getElementById('emptyState');
-                var dEl   = document.getElementById('dplayer');
-                if (empty) empty.style.display = 'none';
-                if (dEl)   dEl.style.display   = 'block';
-                dplayerEl = dEl || dplayerEl;
+                // 清除上一生命周期的占位或错误视图，并取得本轮唯一的播放器容器。
+                var dEl = preparePlayerView();
 
                 try {
                     // DPlayer 自带“页面全屏”（.dplayer-full-in-icon，悬停全屏区域时显示）
