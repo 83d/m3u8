@@ -28,14 +28,42 @@
             background: #1a1a1a;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
             border: 1px solid #2a2a2a;
         }
-        .input-area label {
+        .url-label {
             display: block;
             font-size: 14px;
             color: #888;
+        }
+        .input-heading {
             margin-bottom: 10px;
+        }
+        .playback-options {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 20px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #262626;
+        }
+        .playback-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .playback-option input {
+            width: 15px;
+            height: 15px;
+            margin: 0;
+            accent-color: #0099ff;
+            cursor: pointer;
         }
         .input-row {
             display: flex;
@@ -87,6 +115,7 @@
             aspect-ratio: 16 / 9;
             position: relative;
             margin-bottom: 20px;
+            scroll-margin-top: 36px;
         }
         #dplayer {
             width: 100%;
@@ -106,6 +135,260 @@
         .empty-state .icon {
             font-size: 48px;
             opacity: 0.3;
+        }
+        .history-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .history-header {
+            min-height: 58px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-title-group {
+            min-width: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .history-title-icon {
+            flex: none;
+            width: 30px;
+            height: 30px;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid rgba(0, 153, 255, 0.28);
+            border-radius: 8px;
+            background: rgba(0, 153, 255, 0.1);
+            color: #62c1ff;
+        }
+        .history-title-icon svg {
+            width: 17px;
+            height: 17px;
+        }
+        .history-count {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: #292929;
+            color: #999;
+            font-size: 11px;
+            font-weight: 400;
+        }
+        .history-header-actions {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-toggle {
+            flex: none;
+            width: 34px;
+            height: 34px;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid #383838;
+            border-radius: 8px;
+            background: #222;
+            color: #8a8a8a;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+        .history-toggle:hover {
+            border-color: rgba(0, 153, 255, 0.55);
+            background: rgba(0, 153, 255, 0.1);
+            color: #62c1ff;
+        }
+        .history-toggle:active {
+            background: rgba(0, 153, 255, 0.16);
+        }
+        .history-toggle svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.2s ease;
+        }
+        .history-card.is-collapsed .history-toggle svg {
+            transform: rotate(180deg);
+        }
+        .history-clear {
+            flex: none;
+            width: 70px;
+            height: 34px;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #3a3434;
+            border-radius: 7px;
+            background: #222;
+            color: #999;
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            transition: border-color 0.16s, background-color 0.16s, color 0.16s;
+        }
+        .history-clear:hover:not(:disabled) {
+            border-color: #6b3535;
+            background: rgba(255, 107, 107, 0.08);
+            color: #ff8585;
+        }
+        .history-clear:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+        .history-body {
+            padding: 0 16px 16px;
+        }
+        .history-card.is-collapsed .history-body {
+            display: none;
+        }
+        .history-table-wrap {
+            max-height: 440px;
+            overflow: auto;
+            border: 1px solid #292929;
+            border-radius: 9px;
+            background: #121212;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .history-table th {
+            position: sticky;
+            z-index: 1;
+            top: 0;
+            padding: 10px 12px;
+            border-bottom: 1px solid #303030;
+            background: #171717;
+            color: #777;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid #252525;
+            color: #aaa;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+        .history-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+        .history-table tbody tr:not(.history-empty-row):hover {
+            background: #161616;
+        }
+        .history-name-input {
+            display: block;
+            width: 100%;
+            min-width: 0;
+            padding: 7px 8px;
+            border: 1px solid #343434;
+            border-radius: 6px;
+            outline: none;
+            background: #0d0d0d;
+            color: #eee;
+            font-size: 12px;
+        }
+        .history-name-input::placeholder {
+            color: #5c5c5c;
+        }
+        .history-name-input:focus {
+            border-color: #0099ff;
+        }
+        .history-progress-text {
+            color: #a5a5a5;
+            line-height: 1.45;
+            white-space: nowrap;
+        }
+        .history-progress-track {
+            height: 4px;
+            margin-top: 7px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #292929;
+        }
+        .history-progress-value {
+            height: 100%;
+            border-radius: inherit;
+            background: #0099ff;
+        }
+        .history-url {
+            display: block;
+            overflow: hidden;
+            color: #777;
+            font-size: 11px;
+            line-height: 1.5;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .history-time {
+            color: #858585;
+            line-height: 1.45;
+            white-space: nowrap;
+        }
+        .history-row-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .history-action {
+            height: 34px;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #333;
+            border-radius: 7px;
+            background: #202020;
+            color: #aaa;
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: border-color 0.16s, background-color 0.16s, color 0.16s;
+        }
+        .history-action:hover {
+            border-color: #4a4a4a;
+            background: #282828;
+            color: #fff;
+        }
+        .history-resume {
+            width: 70px;
+            border-color: rgba(0, 153, 255, 0.4);
+            background: rgba(0, 153, 255, 0.12);
+            color: #60bdff;
+        }
+        .history-resume:hover {
+            border-color: rgba(0, 153, 255, 0.72);
+            background: rgba(0, 153, 255, 0.2);
+            color: #9bd8ff;
+        }
+        .history-delete {
+            width: 46px;
+            border-color: #383232;
+        }
+        .history-delete:hover {
+            border-color: #6b3535;
+            background: rgba(255, 107, 107, 0.08);
+            color: #ff8585;
+        }
+        .history-empty-cell {
+            padding: 24px 14px !important;
+            color: #666 !important;
+            line-height: 1.7;
+            text-align: center;
         }
         .info-card {
             background: #1a1a1a;
@@ -163,6 +446,88 @@
         .dplayer-played {
             background: #0099ff !important;
         }
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid rgba(0, 153, 255, 0.75);
+            outline-offset: 2px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            .player-wrapper {
+                scroll-margin-top: 20px;
+            }
+            .input-area,
+            .info-card {
+                padding: 16px;
+            }
+            .input-row {
+                flex-direction: column;
+            }
+            .input-row button {
+                width: 100%;
+            }
+            .history-header {
+                padding: 0 12px;
+            }
+            .history-body {
+                padding: 0 12px 12px;
+            }
+            .history-table-wrap {
+                max-height: 520px;
+                border: 0;
+                background: transparent;
+            }
+            .history-table,
+            .history-table tbody,
+            .history-table tr,
+            .history-table td {
+                display: block;
+                width: 100%;
+            }
+            .history-table colgroup,
+            .history-table thead {
+                display: none;
+            }
+            .history-table tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .history-table tr {
+                overflow: hidden;
+                border: 1px solid #292929;
+                border-radius: 9px;
+                background: #121212;
+            }
+            .history-table td {
+                display: grid;
+                grid-template-columns: 88px minmax(0, 1fr);
+                gap: 10px;
+                align-items: center;
+                padding: 10px 12px;
+                border-bottom: 1px solid #252525;
+            }
+            .history-table td::before {
+                content: attr(data-label);
+                color: #666;
+                font-size: 11px;
+            }
+            .history-table .history-empty-cell {
+                display: block;
+            }
+            .history-table .history-empty-cell::before {
+                content: none;
+            }
+            .history-row-actions {
+                justify-content: flex-start;
+            }
+            .history-url {
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+        }
     </style>
 </head>
 <body>
@@ -170,13 +535,27 @@
         <h1>🎬 M3U8 播放器</h1>
 
         <div class="input-area">
-            <label>M3U8 视频地址</label>
+            <div class="input-heading">
+                <label class="url-label" for="urlInput">M3U8 视频地址</label>
+            </div>
             <div class="input-row">
                 <input type="text" id="urlInput" placeholder="https://example.com/video.m3u8" 
                     value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">
                 <button id="playBtn">▶ 播放</button>
             </div>
             <p class="hint">💡 输入 m3u8 地址后点击播放，上方已预填测试地址。按 Enter 也可触发播放。</p>
+            <div class="playback-options" aria-label="播放选项">
+                <label class="playback-option" for="recordHistory"
+                    title="关闭后仍可使用已有断点，但本次播放不会新增或更新记录">
+                    <input type="checkbox" id="recordHistory" checked>
+                    <span>记录播放进度</span>
+                </label>
+                <label class="playback-option" for="autoScrollPlayback"
+                    title="视频成功开始播放后再自动滚动；加载失败时不会跳转">
+                    <input type="checkbox" id="autoScrollPlayback" checked>
+                    <span>视频播放后自动跳转到最佳观看位置</span>
+                </label>
+            </div>
         </div>
 
         <div class="player-wrapper" id="playerWrapper">
@@ -186,6 +565,58 @@
             </div>
             <div id="dplayer" style="display:none;"></div>
         </div>
+
+        <section class="history-card" id="historyCard" aria-labelledby="historyTitle">
+            <div class="history-header">
+                <div class="history-title-group">
+                    <span class="history-title-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                            <path d="M12 7v5l4 2"></path>
+                        </svg>
+                    </span>
+                    <span id="historyTitle">历史观看列表</span>
+                    <span class="history-count" id="historyCount">0 条</span>
+                </div>
+                <div class="history-header-actions">
+                    <button class="history-toggle" id="historyToggle" type="button"
+                        aria-expanded="true" aria-controls="historyBody"
+                        aria-label="收起历史观看列表" title="收起历史观看列表">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="m6 15 6-6 6 6"></path>
+                        </svg>
+                    </button>
+                    <button class="history-clear" id="clearHistoryBtn" type="button">清空记录</button>
+                </div>
+            </div>
+            <div class="history-body" id="historyBody">
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <colgroup>
+                            <col style="width:20%">
+                            <col style="width:23%">
+                            <col style="width:26%">
+                            <col style="width:13%">
+                            <col style="width:18%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col">视频名称</th>
+                                <th scope="col">观看进度</th>
+                                <th scope="col">视频地址</th>
+                                <th scope="col">最后观看时间</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
         <div class="info-card">
             <h3>使用说明</h3>
@@ -210,7 +641,8 @@
              *    仅在 hls.js 无法运行、但浏览器具备原生 HLS 能力时才回退到原生播放。
              * 3. 每次点击播放都视为新一代播放器：旧 Hls 要先于旧 DPlayer 销毁，所有异步事件
              *    必须校验 generation，防止旧 video 的延迟 error 破坏新播放器。
-             * 4. URL、分 URL 的播放进度和音量会存入 localStorage，这是有意保留的使用体验。
+             * 4. URL、分 URL 的播放进度、历史元数据、记录偏好和音量会存入 localStorage，
+             *    这是有意保留的使用体验；进度表继续使用旧版 URL→秒数结构以兼容已有数据。
              * 5. “页面全屏”和“浏览器全屏”沿用 DPlayer 自带控制栏；不要另外实现或删除其控件。
              */
             let dp = null;
@@ -220,15 +652,30 @@
             // 单调递增的生命周期令牌，用于识别已经被切源淘汰的播放器及其延迟事件。
             let playerGeneration = 0;
             let progressTimer = null;
+            let activePlayerScroll = null;
+            // 记录开关按播放器生命周期生效；删除当前记录后也可阻止旧定时器将它重新写回。
+            let currentRecordingEnabled = false;
             const urlInput = document.getElementById('urlInput');
             const playBtn = document.getElementById('playBtn');
             const emptyState = document.getElementById('emptyState');
+            const playerWrapper = document.getElementById('playerWrapper');
+            const recordHistoryInput = document.getElementById('recordHistory');
+            const autoScrollPlaybackInput = document.getElementById('autoScrollPlayback');
+            const historyCard = document.getElementById('historyCard');
+            const historyToggle = document.getElementById('historyToggle');
+            const historyCount = document.getElementById('historyCount');
+            const historyList = document.getElementById('historyList');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
             let dplayerEl = document.getElementById('dplayer');
 
-            // 【项目定制：状态记忆】进度以 URL 为键保存，避免不同视频互相覆盖续播位置。
-            const KEY_URL      = 'm3u8-player-url';
-            const KEY_PROGRESS = 'm3u8-player-progress';
-            const KEY_VOLUME   = 'm3u8-player-volume';
+            // 【项目定制：状态记忆】旧进度表保持 URL→秒数结构，新增元数据表以兼容既有用户数据。
+            const KEY_URL               = 'm3u8-player-url';
+            const KEY_PROGRESS          = 'm3u8-player-progress';
+            const KEY_HISTORY           = 'm3u8-player-history';
+            const KEY_VOLUME            = 'm3u8-player-volume';
+            const KEY_RECORD_HISTORY    = 'm3u8-player-record-history';
+            const KEY_AUTO_SCROLL       = 'm3u8-player-auto-scroll';
+            const KEY_HISTORY_COLLAPSED = 'm3u8-player-history-collapsed';
 
             // 【项目定制：尽可能完整地提前缓冲】以下极大值是原项目的明确需求，不是笔误。
             // 当前锁定的 DPlayer 1.27.0 使用 type: 'hls' 时，会在浏览器声明原生 HLS 支持后
@@ -247,6 +694,13 @@
                 }
             })();
 
+            // 播放选项默认开启；折叠状态只记住用户主动选择，首次访问保持展开。
+            (function restorePreferences() {
+                recordHistoryInput.checked = localStorage.getItem(KEY_RECORD_HISTORY) !== 'false';
+                autoScrollPlaybackInput.checked = localStorage.getItem(KEY_AUTO_SCROLL) !== 'false';
+                setHistoryCollapsed(localStorage.getItem(KEY_HISTORY_COLLAPSED) === 'true', false);
+            })();
+
             // 先保存用户粘贴的原始文本；点击播放并成功提取后，再用纯 URL 覆盖它。
             urlInput.addEventListener('input', function() {
                 localStorage.setItem(KEY_URL, urlInput.value);
@@ -255,22 +709,26 @@
             // 【项目定制：断点续播】同一个 m3u8 URL 恢复上次播放位置。
             function getProgressMap() {
                 try {
-                    return JSON.parse(localStorage.getItem(KEY_PROGRESS)) || {};
+                    var parsed = JSON.parse(localStorage.getItem(KEY_PROGRESS));
+                    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
                 } catch (e) {
                     return {};
                 }
             }
 
-            function saveProgress(url, time) {
-                if (!url || time <= 0) return;
+            function saveProgress(url, time, player) {
+                if (!url || !isFinite(time) || time <= 0) return;
                 var map = getProgressMap();
                 map[url] = Math.floor(time);
                 localStorage.setItem(KEY_PROGRESS, JSON.stringify(map));
+                touchHistory(url, getPlayerHistoryPatch(player));
+                renderHistoryIfIdle();
             }
 
             function getProgress(url) {
                 var map = getProgressMap();
-                return map[url] || 0;
+                var value = Number(map[url]);
+                return isFinite(value) && value > 0 ? value : 0;
             }
 
             function clearProgress(url) {
@@ -278,6 +736,497 @@
                 delete map[url];
                 localStorage.setItem(KEY_PROGRESS, JSON.stringify(map));
             }
+
+            function getHistoryMap() {
+                try {
+                    var parsed = JSON.parse(localStorage.getItem(KEY_HISTORY));
+                    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveHistoryMap(map) {
+                localStorage.setItem(KEY_HISTORY, JSON.stringify(map));
+            }
+
+            // 元数据与进度分开保存，让旧版 URL→秒数记录可以直接显示而无需迁移。
+            function touchHistory(url, patch) {
+                if (!url) return;
+                var map = getHistoryMap();
+                var current = map[url] && typeof map[url] === 'object' ? map[url] : {};
+                Object.keys(patch || {}).forEach(function(key) {
+                    if (patch[key] !== undefined && patch[key] !== null) {
+                        current[key] = patch[key];
+                    }
+                });
+                map[url] = current;
+                saveHistoryMap(map);
+            }
+
+            function getPlayerHistoryPatch(player) {
+                var patch = { lastPlayedAt: Date.now() };
+                var video = player && player.video;
+                if (!video) return patch;
+
+                if (isFinite(video.duration) && video.duration > 0) {
+                    patch.duration = Math.round(video.duration * 1000) / 1000;
+                }
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    patch.width = video.videoWidth;
+                    patch.height = video.videoHeight;
+                }
+                return patch;
+            }
+
+            function removeHistoryRecord(url) {
+                clearProgress(url);
+                var historyMap = getHistoryMap();
+                delete historyMap[url];
+                saveHistoryMap(historyMap);
+                renderHistory();
+            }
+
+            function getHistoryEntries() {
+                var progressMap = getProgressMap();
+                var historyMap = getHistoryMap();
+                var urls = {};
+
+                Object.keys(progressMap).forEach(function(url) {
+                    var progress = Number(progressMap[url]);
+                    if (isFinite(progress) && progress > 0) urls[url] = true;
+                });
+                Object.keys(historyMap).forEach(function(url) { urls[url] = true; });
+
+                return Object.keys(urls).map(function(url) {
+                    var meta = historyMap[url] && typeof historyMap[url] === 'object'
+                        ? historyMap[url] : {};
+                    var progress = Number(progressMap[url]);
+                    var duration = Number(meta.duration);
+                    return {
+                        url: url,
+                        name: typeof meta.name === 'string' ? meta.name : '',
+                        progress: isFinite(progress) && progress > 0 ? progress : 0,
+                        duration: isFinite(duration) && duration > 0 ? duration : 0,
+                        width: Number(meta.width) || 0,
+                        height: Number(meta.height) || 0,
+                        lastPlayedAt: Number(meta.lastPlayedAt) || 0
+                    };
+                }).sort(function(a, b) {
+                    // 最后观看时间越新越靠前；旧版没有时间的记录自然排在末尾。
+                    return b.lastPlayedAt - a.lastPlayedAt
+                        || b.progress - a.progress
+                        || a.url.localeCompare(b.url);
+                });
+            }
+
+            function formatMediaTime(seconds) {
+                var value = Math.max(0, Math.floor(Number(seconds) || 0));
+                var hours = Math.floor(value / 3600);
+                var minutes = Math.floor((value % 3600) / 60);
+                var secs = value % 60;
+                var paddedSecs = String(secs).padStart(2, '0');
+                if (hours > 0) {
+                    return hours + ':' + String(minutes).padStart(2, '0') + ':' + paddedSecs;
+                }
+                return minutes + ':' + paddedSecs;
+            }
+
+            function formatLastPlayed(timestamp) {
+                if (!timestamp) return '较早记录';
+                var date = new Date(timestamp);
+                var now = new Date();
+                if (isNaN(date.getTime())) return '较早记录';
+
+                function isSameDay(left, right) {
+                    return left.getFullYear() === right.getFullYear()
+                        && left.getMonth() === right.getMonth()
+                        && left.getDate() === right.getDate();
+                }
+
+                var time = String(date.getHours()).padStart(2, '0') + ':'
+                    + String(date.getMinutes()).padStart(2, '0');
+                if (isSameDay(date, now)) return '今天 ' + time;
+
+                var yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                if (isSameDay(date, yesterday)) return '昨天 ' + time;
+
+                var datePart = String(date.getMonth() + 1).padStart(2, '0') + '-'
+                    + String(date.getDate()).padStart(2, '0');
+                if (date.getFullYear() === now.getFullYear()) {
+                    return datePart + ' ' + time;
+                }
+                return date.getFullYear() + '-' + datePart + ' ' + time;
+            }
+
+            function setHistoryCollapsed(collapsed, persist) {
+                historyCard.classList.toggle('is-collapsed', collapsed);
+                historyToggle.setAttribute('aria-expanded', String(!collapsed));
+                var actionLabel = collapsed ? '展开历史观看列表' : '收起历史观看列表';
+                historyToggle.setAttribute('aria-label', actionLabel);
+                historyToggle.title = actionLabel;
+                if (persist !== false) {
+                    localStorage.setItem(KEY_HISTORY_COLLAPSED, String(collapsed));
+                }
+            }
+
+            function getPlayerScrollTarget() {
+                var offset = parseFloat(getComputedStyle(playerWrapper).scrollMarginTop) || 0;
+                var rect = playerWrapper.getBoundingClientRect();
+                return {
+                    offset: offset,
+                    top: Math.max(0, window.scrollY + rect.top - offset),
+                    error: rect.top - offset
+                };
+            }
+
+            function cancelPlayerAutoScroll(stopAtCurrentPosition) {
+                var operation = activePlayerScroll;
+                if (!operation) return;
+
+                activePlayerScroll = null;
+                operation.cancelled = true;
+                operation.cleanup();
+
+                // 新的滚动指令会中止仍在进行的原生平滑滚动；随后不再复测或校正。
+                if (stopAtCurrentPosition) {
+                    window.scrollTo({
+                        left: window.scrollX,
+                        top: window.scrollY,
+                        behavior: 'auto'
+                    });
+                }
+            }
+
+            // 播放按钮只登记一次待跳转，真正收到当前播放器的 playing 事件后才开始滚动。
+            // 因此无效地址、清单或分片加载失败都不会让页面提前跳走。
+            function preparePlayerAutoScroll(generation) {
+                cancelPlayerAutoScroll(true);
+                if (!autoScrollPlaybackInput.checked) return;
+
+                var operation = {
+                    generation: generation,
+                    cancelled: false,
+                    started: false,
+                    correctionCount: 0,
+                    animationFrames: [],
+                    verifyTimer: null,
+                    maxTimer: null,
+                    start: function() {},
+                    cleanup: function() {}
+                };
+                activePlayerScroll = operation;
+
+                function isActive() {
+                    return activePlayerScroll === operation && !operation.cancelled;
+                }
+
+                function onUserIntent(event) {
+                    if (event && event.isTrusted === false) return;
+                    cancelPlayerAutoScroll(true);
+                }
+
+                function clearVerifyTimer() {
+                    if (operation.verifyTimer) {
+                        clearTimeout(operation.verifyTimer);
+                        operation.verifyTimer = null;
+                    }
+                }
+
+                function cleanup() {
+                    clearVerifyTimer();
+                    if (operation.maxTimer) {
+                        clearTimeout(operation.maxTimer);
+                        operation.maxTimer = null;
+                    }
+                    operation.animationFrames.forEach(cancelAnimationFrame);
+                    operation.animationFrames = [];
+                    window.removeEventListener('scroll', onScroll);
+                    window.removeEventListener('scrollend', verifyPosition);
+                    window.removeEventListener('wheel', onUserIntent, true);
+                    window.removeEventListener('touchstart', onUserIntent, true);
+                    window.removeEventListener('touchmove', onUserIntent, true);
+                    window.removeEventListener('pointerdown', onUserIntent, true);
+                    window.removeEventListener('keydown', onUserIntent, true);
+                }
+                operation.cleanup = cleanup;
+
+                function finish() {
+                    if (!isActive()) return;
+                    activePlayerScroll = null;
+                    operation.cancelled = true;
+                    cleanup();
+                }
+
+                function queueVerification(delay) {
+                    if (!isActive()) return;
+                    clearVerifyTimer();
+                    operation.verifyTimer = setTimeout(verifyPosition, delay);
+                }
+
+                function onScroll() {
+                    // 平滑滚动期间持续后延检测，直到滚动事件真正安静下来。
+                    queueVerification(160);
+                }
+
+                function verifyPosition() {
+                    if (!isActive()) return;
+                    clearVerifyTimer();
+
+                    var target = getPlayerScrollTarget();
+                    if (Math.abs(target.error) <= 1 || operation.correctionCount >= 2) {
+                        finish();
+                        return;
+                    }
+
+                    operation.correctionCount += 1;
+                    window.scrollTo({
+                        left: window.scrollX,
+                        top: target.top,
+                        behavior: 'auto'
+                    });
+                    queueVerification(100);
+                }
+
+                window.addEventListener('wheel', onUserIntent, { capture: true, passive: true });
+                window.addEventListener('touchstart', onUserIntent, { capture: true, passive: true });
+                window.addEventListener('touchmove', onUserIntent, { capture: true, passive: true });
+                window.addEventListener('pointerdown', onUserIntent, { capture: true, passive: true });
+                window.addEventListener('keydown', onUserIntent, true);
+
+                // 不依赖 scrollIntoView 对 scroll-margin 的浏览器实现，直接按页面坐标计算目标位置。
+                // 等两帧让 DPlayer 的首帧布局稳定；结束后复测，误差超过 1px 时最多校正两次。
+                operation.start = function() {
+                    if (!isActive() || operation.started) return;
+                    operation.started = true;
+                    window.addEventListener('scroll', onScroll, { passive: true });
+                    window.addEventListener('scrollend', verifyPosition);
+                    operation.maxTimer = setTimeout(finish, 3000);
+                    operation.animationFrames.push(requestAnimationFrame(function() {
+                        operation.animationFrames.push(requestAnimationFrame(function() {
+                            if (!isActive()) return;
+                            var target = getPlayerScrollTarget();
+                            var reduceMotion = window.matchMedia
+                                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                            window.scrollTo({
+                                left: window.scrollX,
+                                top: target.top,
+                                behavior: reduceMotion ? 'auto' : 'smooth'
+                            });
+                            // 已经位于目标位置时可能没有 scroll/scrollend 事件，因此保留定时复测。
+                            queueVerification(160);
+                        }));
+                    }));
+                };
+            }
+
+            function startPreparedPlayerAutoScroll(generation) {
+                var operation = activePlayerScroll;
+                if (!operation || operation.generation !== generation) return;
+                operation.start();
+            }
+
+            function saveHistoryName(url, value) {
+                var map = getHistoryMap();
+                var meta = map[url] && typeof map[url] === 'object' ? map[url] : {};
+                var name = String(value || '').trim();
+                if (name) {
+                    meta.name = name;
+                } else {
+                    delete meta.name;
+                }
+                map[url] = meta;
+                saveHistoryMap(map);
+            }
+
+            function renderHistory() {
+                var entries = getHistoryEntries();
+                historyCount.textContent = entries.length + ' 条';
+                clearHistoryBtn.disabled = entries.length === 0;
+                historyList.replaceChildren();
+
+                if (!entries.length) {
+                    var emptyRow = document.createElement('tr');
+                    emptyRow.className = 'history-empty-row';
+                    var emptyCell = document.createElement('td');
+                    emptyCell.className = 'history-empty-cell';
+                    emptyCell.colSpan = 5;
+                    emptyCell.textContent = '还没有未看完的记录。开始播放后，进度会自动出现在这里。';
+                    emptyRow.appendChild(emptyCell);
+                    historyList.appendChild(emptyRow);
+                    return;
+                }
+
+                entries.forEach(function(entry) {
+                    var row = document.createElement('tr');
+
+                    var nameCell = document.createElement('td');
+                    nameCell.setAttribute('data-label', '视频名称');
+                    var nameInput = document.createElement('input');
+                    nameInput.className = 'history-name-input';
+                    nameInput.type = 'text';
+                    nameInput.maxLength = 100;
+                    nameInput.placeholder = '给这条记录命名';
+                    nameInput.value = entry.name;
+                    nameInput.setAttribute('aria-label', '视频名称：' + entry.url);
+                    nameInput.addEventListener('change', function() {
+                        saveHistoryName(entry.url, nameInput.value);
+                        nameInput.value = nameInput.value.trim();
+                        entry.name = nameInput.value;
+                        resume.setAttribute('aria-label', '继续播放：' + (entry.name || entry.url));
+                        remove.setAttribute('aria-label', '删除记录：' + (entry.name || entry.url));
+                    });
+                    nameInput.addEventListener('keydown', function(event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            nameInput.blur();
+                        } else if (event.key === 'Escape') {
+                            nameInput.value = entry.name;
+                            nameInput.blur();
+                        }
+                    });
+                    nameCell.appendChild(nameInput);
+
+                    var progressCell = document.createElement('td');
+                    progressCell.setAttribute('data-label', '观看进度');
+                    var progressText = document.createElement('div');
+                    progressText.className = 'history-progress-text';
+                    if (entry.duration > 0) {
+                        var percent = Math.min(100, Math.max(0,
+                            Math.round(entry.progress / entry.duration * 100)));
+                        progressText.textContent = formatMediaTime(entry.progress) + ' / '
+                            + formatMediaTime(entry.duration) + '（已看：' + percent + '%）';
+                    } else {
+                        progressText.textContent = formatMediaTime(entry.progress) + ' / 待获取';
+                    }
+                    progressCell.appendChild(progressText);
+
+                    if (entry.duration > 0) {
+                        var progressBar = document.createElement('div');
+                        progressBar.className = 'history-progress-track';
+                        progressBar.setAttribute('role', 'progressbar');
+                        var progressPercent = Math.min(100, Math.max(0,
+                            entry.progress / entry.duration * 100));
+                        progressBar.setAttribute('aria-valuemin', '0');
+                        progressBar.setAttribute('aria-valuemax', '100');
+                        progressBar.setAttribute('aria-valuenow', String(Math.round(progressPercent)));
+
+                        var progressValue = document.createElement('div');
+                        progressValue.className = 'history-progress-value';
+                        progressValue.style.width = progressPercent + '%';
+                        progressBar.appendChild(progressValue);
+                        progressCell.appendChild(progressBar);
+                    }
+
+                    var urlCell = document.createElement('td');
+                    urlCell.setAttribute('data-label', '视频地址');
+                    var urlLine = document.createElement('span');
+                    urlLine.className = 'history-url';
+                    urlLine.textContent = entry.url;
+                    urlLine.title = entry.url;
+                    urlCell.appendChild(urlLine);
+
+                    var timeCell = document.createElement('td');
+                    timeCell.setAttribute('data-label', '最后观看时间');
+                    var lastPlayed = document.createElement('span');
+                    lastPlayed.className = 'history-time';
+                    lastPlayed.textContent = formatLastPlayed(entry.lastPlayedAt);
+                    timeCell.appendChild(lastPlayed);
+
+                    var actionCell = document.createElement('td');
+                    actionCell.setAttribute('data-label', '操作');
+                    var actions = document.createElement('div');
+                    actions.className = 'history-row-actions';
+
+                    var resume = document.createElement('button');
+                    resume.className = 'history-action history-resume';
+                    resume.type = 'button';
+                    resume.textContent = '继续播放';
+                    resume.setAttribute('aria-label', '继续播放：' + (entry.name || entry.url));
+                    resume.addEventListener('click', function() {
+                        resume.blur();
+                        urlInput.value = entry.url;
+                        localStorage.setItem(KEY_URL, entry.url);
+                        playBtn.click();
+                    });
+
+                    var remove = document.createElement('button');
+                    remove.className = 'history-action history-delete';
+                    remove.type = 'button';
+                    remove.textContent = '删除';
+                    remove.setAttribute('aria-label', '删除记录：' + (entry.name || entry.url));
+                    remove.addEventListener('click', function() {
+                        if (currentUrl === entry.url) {
+                            currentRecordingEnabled = false;
+                            stopProgressSaver();
+                        }
+                        removeHistoryRecord(entry.url);
+                    });
+
+                    actions.appendChild(resume);
+                    actions.appendChild(remove);
+                    actionCell.appendChild(actions);
+                    row.appendChild(nameCell);
+                    row.appendChild(progressCell);
+                    row.appendChild(urlCell);
+                    row.appendChild(timeCell);
+                    row.appendChild(actionCell);
+                    historyList.appendChild(row);
+                });
+            }
+
+            function renderHistoryIfIdle() {
+                if (!historyList.contains(document.activeElement)) {
+                    renderHistory();
+                }
+            }
+
+            historyToggle.addEventListener('click', function() {
+                setHistoryCollapsed(!historyCard.classList.contains('is-collapsed'));
+            });
+
+            clearHistoryBtn.addEventListener('click', function() {
+                if (!getHistoryEntries().length) return;
+                if (!confirm('确定清空全部播放记录吗？自定义名称和断点进度也会一并删除。')) {
+                    return;
+                }
+                localStorage.removeItem(KEY_PROGRESS);
+                localStorage.removeItem(KEY_HISTORY);
+                if (dp) {
+                    currentRecordingEnabled = false;
+                    stopProgressSaver();
+                }
+                renderHistory();
+            });
+
+            recordHistoryInput.addEventListener('change', function() {
+                localStorage.setItem(KEY_RECORD_HISTORY, String(recordHistoryInput.checked));
+                if (!dp || !currentUrl) return;
+
+                currentRecordingEnabled = recordHistoryInput.checked;
+                if (!currentRecordingEnabled) {
+                    stopProgressSaver();
+                    return;
+                }
+
+                touchHistory(currentUrl, getPlayerHistoryPatch(dp));
+                if (dp.video && dp.video.currentTime > 0) {
+                    saveProgress(currentUrl, dp.video.currentTime, dp);
+                } else {
+                    renderHistoryIfIdle();
+                }
+                if (dp.video && !dp.video.paused) {
+                    startProgressSaver(currentUrl, dp, playerGeneration);
+                }
+            });
+
+            autoScrollPlaybackInput.addEventListener('change', function() {
+                localStorage.setItem(KEY_AUTO_SCROLL, String(autoScrollPlaybackInput.checked));
+                if (!autoScrollPlaybackInput.checked) {
+                    cancelPlayerAutoScroll(true);
+                }
+            });
 
             // 【项目定制：音量记忆】新播放器沿用用户最后一次设置，而不是每次回到默认值。
             function getSavedVolume() {
@@ -296,10 +1245,12 @@
             // generation 和实例双重校验用于阻止旧播放器的定时器写入新会话。
             function startProgressSaver(url, player, generation) {
                 stopProgressSaver();
+                if (!currentRecordingEnabled) return;
                 progressTimer = setInterval(function() {
                     if (generation === playerGeneration && dp === player
+                        && currentRecordingEnabled
                         && player.video && player.video.currentTime) {
-                        saveProgress(url, player.video.currentTime);
+                        saveProgress(url, player.video.currentTime, player);
                     }
                 }, 5000);
             }
@@ -353,19 +1304,23 @@
             // 销毁 video.src 会异步产生 MEDIA_ELEMENT_ERROR；顺序和令牌校验都不能省略，
             // 否则旧播放器的 error 可能在新播放器创建后到达，并把新 DOM 替换成错误页面。
             function destroyCurrentPlayer() {
+                cancelPlayerAutoScroll(true);
                 playerGeneration += 1;
                 stopProgressSaver();
 
                 var oldPlayer = dp;
                 var oldHls = currentHls;
                 var oldUrl = currentUrl;
+                var oldRecordingEnabled = currentRecordingEnabled;
 
                 dp = null;
                 currentHls = null;
                 currentUrl = '';
+                currentRecordingEnabled = false;
 
-                if (oldPlayer && oldPlayer.video && oldPlayer.video.currentTime) {
-                    saveProgress(oldUrl, oldPlayer.video.currentTime);
+                if (oldRecordingEnabled && oldPlayer && oldPlayer.video
+                    && oldPlayer.video.currentTime) {
+                    saveProgress(oldUrl, oldPlayer.video.currentTime, oldPlayer);
                 }
 
                 // customType 中创建的 Hls 归本页面所有，必须在 DPlayer 前主动销毁，
@@ -393,6 +1348,8 @@
                 // 捕获本次生命周期；下面所有事件只允许操作同一 generation 的实例。
                 var generation = playerGeneration;
                 currentUrl = url;
+                currentRecordingEnabled = recordHistoryInput.checked;
+                preparePlayerAutoScroll(generation);
 
                 // 清除上一生命周期的占位或错误视图，并取得本轮唯一的播放器容器。
                 var dEl = preparePlayerView();
@@ -460,9 +1417,24 @@
                         }
                     });
 
-                    // 播放时启动定时保存
-                    player.on('play', function() {
+                    // 媒体信息到达后补齐总时长；旧进度第一次重播时也会在这里完成元数据升级。
+                    player.on('durationchange', function() {
+                        if (!isCurrentPlayer() || !currentRecordingEnabled) return;
+                        touchHistory(url, getPlayerHistoryPatch(player));
+                        renderHistoryIfIdle();
+                    });
+
+                    // play 只表示收到了播放意图；playing 才表示媒体数据已经成功开始输出。
+                    player.on('playing', function() {
                         if (!isCurrentPlayer()) return;
+                        startPreparedPlayerAutoScroll(generation);
+                    });
+
+                    // 播放时创建/刷新记录并启动定时保存。
+                    player.on('play', function() {
+                        if (!isCurrentPlayer() || !currentRecordingEnabled) return;
+                        touchHistory(url, getPlayerHistoryPatch(player));
+                        renderHistoryIfIdle();
                         startProgressSaver(url, player, generation);
                     });
 
@@ -470,16 +1442,18 @@
                     player.on('pause', function() {
                         if (!isCurrentPlayer()) return;
                         stopProgressSaver();
-                        if (player.video && player.video.currentTime) {
-                            saveProgress(url, player.video.currentTime);
+                        if (currentRecordingEnabled && player.video && player.video.currentTime) {
+                            saveProgress(url, player.video.currentTime, player);
                         }
                     });
 
-                    // 播放结束时清除该视频的进度记录
+                    // 仅在本次播放启用记录时，把已经看完的视频从“历史观看列表”中移除。
                     player.on('ended', function() {
                         if (!isCurrentPlayer()) return;
                         stopProgressSaver();
-                        clearProgress(url);
+                        var shouldRemove = currentRecordingEnabled;
+                        currentRecordingEnabled = false;
+                        if (shouldRemove) removeHistoryRecord(url);
                     });
 
                     // 出错时停止保存
@@ -534,6 +1508,8 @@
             urlInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') playBtn.click();
             });
+
+            renderHistory();
         })();
     </script>
 </body>
