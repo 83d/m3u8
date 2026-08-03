@@ -43,20 +43,35 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 10px 20px;
+            gap: 10px 60px;
             margin-top: 12px;
             padding-top: 12px;
+            padding-left: 16px;
             border-top: 1px solid #262626;
         }
         .playback-option {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 4px;
             color: #aaa;
             font-size: 12px;
             cursor: pointer;
             user-select: none;
             white-space: nowrap;
+        }
+        .playback-option + .playback-option {
+            position: relative;
+        }
+        .playback-option + .playback-option::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -30px;
+            width: 1px;
+            height: 14px;
+            background: #666;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
         .playback-option input {
             width: 15px;
@@ -467,6 +482,14 @@
             }
             .input-row button {
                 width: 100%;
+            }
+            .playback-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .playback-option + .playback-option::before {
+                content: none;
             }
             .history-header {
                 padding: 0 12px;
